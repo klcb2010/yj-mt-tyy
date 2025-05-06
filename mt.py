@@ -79,7 +79,7 @@ def main(username, password):
         qdurl = f'https://bbs.binmt.cc/plugin.php?id=k_misign:sign&operation=qiandao&format=text&formhash={formhash}'
         qd = session.get(url=qdurl, headers=headers).text
         qdyz = re.findall('<root><!\[CDATA\[(.*?)\]\]></root>', qd)[0]
-        myprint(f'签 到 状 态：{qdyz}')
+        myprint(f'签到状态：{qdyz}')
         if '已签' in qd:
             huoqu(formhash)
     return True
@@ -88,7 +88,7 @@ def huoqu(formhash):
     headers = {'User-Agent': ua}
     huo = session.get('https://bbs.binmt.cc/k_misign-sign.html', headers=headers).text
     jiang = re.findall('id="lxreward" value="(.*?)">', huo)[0]
-    myprint(f'签 到 奖 励：{jiang}金币')
+    myprint(f'签到奖励：{jiang}金币')
     tuic = f'https://bbs.binmt.cc/member.php?mod=logging&action=logout&formhash={formhash}'
     session.get(url=tuic, headers=headers)
 
