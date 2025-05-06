@@ -82,7 +82,7 @@ class MTForumSign(object):
             loginhash = re.findall('loginhash=(.*?)">', text, re.S)[0]
             formhash = re.findall('formhash" value="(.*?)".*? />', text, re.S)[0]
         except IndexError:
-            print("无法提取 loginhash 或 formhash，页面结构可能已变更")
+            print("风控触发，明天再整吧，小心永久黑")
             return "签到失败：页面结构异常"
 
         headers['referer'] = hash_url
@@ -147,7 +147,7 @@ class MTForumSign(object):
             jb = re.findall('value="(.*?)"', str(jib))[0]
             zts = re.findall('value="(.*?)"', str(ztsb))[0]
 
-            message = f"""签到详情：
+            message = f"""：
 账号昵称：{name}
 签到排名：{pm}
 连续签到：{lx}天
