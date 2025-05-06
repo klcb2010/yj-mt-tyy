@@ -1,5 +1,5 @@
 '''
-cron:  0 8 * * *
+cron:  2 0 * * *
 new Env('远景论坛签到')
 '''
 import requests
