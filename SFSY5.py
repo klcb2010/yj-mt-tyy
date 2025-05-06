@@ -4,7 +4,7 @@
 # @Author : github@arvinsblog https://github.com/arvinsblog/deepsea
 # @Time : 2025-3-19 13:30:25
 # 收集和修复能用的脚本
-# 修正说明中的变量名 2025 05 06
+# 修正说明中的变量名和删除通知 2025 05 06
 """
 打开小程序或APP-我的-积分, 捉以下几种url之一,把整个url放到变量 SFSY （对 修正的就是这里）里,多账号换行分割
 小程序抓包后筛选 activityRedirect?source=
