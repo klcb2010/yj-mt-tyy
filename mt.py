@@ -1,13 +1,10 @@
-
 """
-//更新时间：2025/5/5
+//更新时间：2025/5/6
 //作者：wdvipa（原作者），夺命梵音（优化）
 //支持青龙和actions定时执行
-//使用方法：创建变量 名字：mt 内容的写法：账号|密码  多个账号用回车键隔开
-//例如: 
-111|1111
-222|2222
-//优化内容：精简日志、防止脚本检测、增强错误处理
+//使用方法：创建变量 名字：mt 内容：账号|密码
+//例如: 111|1111
+//优化内容：精简日志、防止脚本检测、增强错误处理、移除多账号功能
 //推送配置：将需要的推送写入变量mt_fs，多个用&隔开（如 push&tel）
 //如使用push推送，需添加mt_push变量，内容为push的token
 """
@@ -22,7 +19,6 @@ from fake_useragent import UserAgent
 requests.urllib3.disable_warnings()
 
 # 初始化环境变量和全局变量
-cs = 0
 ttoken = ""
 tuserid = ""
 push_token = ""
@@ -30,40 +26,35 @@ SKey = ""
 QKey = ""
 ktkey = ""
 msgs = ""
-datas = ""
 
-# 检测推送配置
-if cs == 1:
-    if "cs_mt" in os.environ:
-        datas = os.environ.get("cs_mt")
-    else:
-        print('您没有输入任何信息')
+# 检测推送配置和账号信息
+if "mt_fs" in os.environ:
+    fs = os.environ.get('mt_fs')
+    fss = fs.split("&")
+    if "tel" in fss and "mt_telkey" in os.environ:
+        telekey = os.environ.get("mt_telkey")
+        telekeys = telekey.split('\n')
+        ttoken = telekeys[0]
+        tuserid = telekeys[1]
+    if "qm" in fss and "mt_qkey" in os.environ:
+        QKey = os.environ.get("mt_qkey")
+    if "stb" in fss and "mt_skey" in os.environ:
+        SKey = os.environ.get("mt_skey")
+    if "push" in fss and "mt_push" in os.environ:
+        push_token = os.environ.get("mt_push")
+    if "kt" in fss and "mt_ktkey" in os.environ:
+        ktkey = os.environ.get("mt_ktkey")
+
+if "mt" in os.environ:
+    data = os.environ.get("mt")
+    profile = data.split('|')
+    if len(profile) != 2:
+        print('账号信息格式错误，应为：账号|密码')
         exit()
-elif cs == 2:
-    datas = ""
+    username, password = profile
 else:
-    if "mt_fs" in os.environ:
-        fs = os.environ.get('mt_fs')
-        fss = fs.split("&")
-        if "tel" in fss and "mt_telkey" in os.environ:
-            telekey = os.environ.get("mt_telkey")
-            telekeys = telekey.split('\n')
-            ttoken = telekeys[0]
-            tuserid = telekeys[1]
-        if "qm" in fss and "mt_qkey" in os.environ:
-            QKey = os.environ.get("mt_qkey")
-        if "stb" in fss and "mt_skey" in os.environ:
-            SKey = os.environ.get("mt_skey")
-        if "push" in fss and "mt_push" in os.environ:
-            push_token = os.environ.get("mt_push")
-        if "kt" in fss and "mt_ktkey" in os.environ:
-            ktkey = os.environ.get("mt_ktkey")
-    if "mt" in os.environ:
-        datas = os.environ.get("mt")
-    else:
-        print('您没有输入任何信息')
-        exit()
-groups = datas.split('\n')
+    print('您没有输入任何信息')
+    exit()
 
 class MTForumSign(object):
     def __init__(self, username, password):
@@ -74,9 +65,12 @@ class MTForumSign(object):
         self.tele_bot_token = ttoken
         self.tele_user_id = tuserid
 
-    def sign(self, session, user_index):
+    def sign(self):
         """执行签到流程"""
         headers = {'User-Agent': self.ua.random}
+        session = requests.session()
+        session.headers = headers
+
         # 模拟访问首页，增加伪装
         session.get('https://bbs.binmt.cc/', headers=headers)
         time.sleep(random.uniform(3, 8))
@@ -84,12 +78,12 @@ class MTForumSign(object):
         # 获取登录所需的 loginhash 和 formhash
         hash_url = 'https://bbs.binmt.cc/member.php?mod=logging&action=login&infloat=yes&handlekey=login&inajax=1&ajaxtarget=fwin_content_login'
         try:
-            text = session.get(headers=headers, url=hash_url).text
+            text = session.get(url=hash_url).text
             loginhash = re.findall('loginhash=(.*?)">', text, re.S)[0]
             formhash = re.findall('formhash" value="(.*?)".*? />', text, re.S)[0]
         except IndexError:
             print("无法提取 loginhash 或 formhash，页面结构可能已变更")
-            return f"第{user_index}个用户签到失败：页面结构异常"
+            return "签到失败：页面结构异常"
 
         headers['referer'] = hash_url
         time.sleep(random.uniform(3, 8))
@@ -105,42 +99,40 @@ class MTForumSign(object):
             'questionid': '0',
             'answer': '',
         }
-        text = session.post(headers=headers, url=login_url, data=data).text
+        text = session.post(url=login_url, data=data).text
         if 'root' not in text:
             print("登录失败")
-            return f"第{user_index}个用户登录失败"
+            return "登录失败"
 
-        print(f"第{user_index}个用户登录成功")
+        print("登录成功")
         time.sleep(random.uniform(3, 8))
 
         # 获取签到页面，检查是否已签到
         sign_page_url = 'https://bbs.binmt.cc/k_misign-sign.html'
-        sign_page = session.get(headers=headers, url=sign_page_url).text
+        sign_page = session.get(url=sign_page_url).text
         if '今日已签' in sign_page:
             print("今日已签到，跳过签到")
-            # 提取签到信息
-            return self._extract_sign_info(sign_page, user_index)
+            return self._extract_sign_info(sign_page)
 
         # 获取签到所需的 formhash
         try:
             formhash = re.findall('formhash" value="(.*?)".*? />', sign_page, re.S)[0]
         except IndexError:
             print("无法提取签到 formhash，页面结构可能已变更")
-            return f"第{user_index}个用户签到失败：页面结构异常"
+            return "签到失败：页面结构异常"
 
         # 模拟签到
         sign_url = f'https://bbs.binmt.cc/plugin.php?id=k_misign:sign&operation=qiandao&format=text&formhash={formhash}'
-        sign_result = session.get(headers=headers, url=sign_url).text
+        sign_result = session.get(url=sign_url).text
         if '<root><' not in sign_result:
             print("签到失败")
-            return f"第{user_index}个用户签到失败"
+            return "签到失败"
 
-        
         # 提取签到信息
-        sign_page = session.get(headers=headers, url=sign_page_url).text
-        return self._extract_sign_info(sign_page, user_index)
+        sign_page = session.get(url=sign_page_url).text
+        return self._extract_sign_info(sign_page)
 
-    def _extract_sign_info(self, page_content, user_index):
+    def _extract_sign_info(self, page_content):
         """提取签到信息并格式化为精简日志"""
         try:
             name = re.findall('<div id="comiis_key".*?<span>(.*?)</span>.*?</div>', page_content, re.S)[0]
@@ -155,9 +147,7 @@ class MTForumSign(object):
             jb = re.findall('value="(.*?)"', str(jib))[0]
             zts = re.findall('value="(.*?)"', str(ztsb))[0]
 
-            message = f"""第{user_index}个用户开始签到
-
-签到详情：
+            message = f"""签到详情：
 账号昵称：{name}
 签到排名：{pm}
 连续签到：{lx}天
@@ -168,7 +158,7 @@ class MTForumSign(object):
             return message
         except Exception as e:
             print(f"提取签到信息失败：{str(e)}")
-            return f"第{user_index}个用户签到失败：提取信息错误"
+            return "签到失败：提取信息错误"
 
     def tele_send(self, msg):
         """Telegram 推送"""
@@ -195,29 +185,19 @@ class MTForumSign(object):
         headers = {'Content-Type': 'application/json'}
         requests.post(url, data=json.dumps(data), headers=headers)
 
-    def main(self, user_index):
+    def main(self):
         """主流程"""
         global msgs
-        session = requests.session()
-        session.headers = {'User-Agent': self.ua.random}
-        result = self.sign(session, user_index)
-        msgs = msgs + '\n' + result
+        result = self.sign()
+        msgs = result
         return result
 
 if __name__ == '__main__':
-    
-    i = 0
-    n = 0
-    while i < len(groups):
-        n += 1
-        group = groups[i]
-        profile = group.split('|')
-        username = profile[0]
-        password = profile[1]
-        sign_task = MTForumSign(username, password)
-        sign_task.main(n)
-        time.sleep(random.uniform(5, 10))
-        i += 1
+    start_time = time.time()
+
+    sign_task = MTForumSign(username, password)
+    sign_task.main()
     if msgs:
-        MTForumSign("", "").pushplus_send(msgs)
-        MTForumSign("", "").tele_send(msgs)
+        sign_task.pushplus_send(msgs)
+        sign_task.tele_send(msgs)
+    end_time = time.time()
