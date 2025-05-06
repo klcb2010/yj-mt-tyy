@@ -1,6 +1,12 @@
 #原作者 https://raw.githubusercontent.com/linbailo/zyqinglong/refs/heads/main/mt.py
 #修改于2025 05 06
 
+'''
+cron:  5 0 * * *
+const $ = new Env("MT论坛");
+'''
+
+
 import requests
 import re
 import os
