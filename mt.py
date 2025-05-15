@@ -1,5 +1,5 @@
 #原作者 https://raw.githubusercontent.com/linbailo/zyqinglong/refs/heads/main/mt.py
-#修改于2025 05 06
+#修改于2025 05 06  mtluntan=username1&password1@username2&password2@username3&password3
 
 '''
 cron:  5 0 * * *
