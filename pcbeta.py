@@ -1,7 +1,8 @@
-"""
-cron: 2 0 * * *
-new Env('远景论坛')
-"""
+
+'''
+cron:  5 0 * * *
+const $ = new Env("远景论坛");
+'''
 import requests
 from datetime import datetime
 import time
