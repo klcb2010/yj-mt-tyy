@@ -1,6 +1,6 @@
 """
 cron: 2 0 * * *
-new Env('远景论坛签到')
+new Env('远景论坛')
 """
 import requests
 from datetime import datetime
