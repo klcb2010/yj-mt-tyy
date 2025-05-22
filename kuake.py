@@ -1,3 +1,7 @@
+# 原作者 海东青 
+#抓包 capacity/growth/info 
+#变量值 kps=xxxx；sign=xxxx；vcode=xxxx
+
 '''
 cron:  5 0 * * *
 const $ = new Env("夸克签到");
