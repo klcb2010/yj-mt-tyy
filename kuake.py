@@ -1,3 +1,8 @@
+'''
+cron:  5 0 * * *
+const $ = new Env("夸克签到");
+'''
+
 import os
 import sys
 import requests
