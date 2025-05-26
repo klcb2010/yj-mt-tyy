@@ -1,7 +1,7 @@
 # 原作者 海东青 
 #抓包 capacity/growth/info 
 #变量值 kps=xxxx；sign=xxxx；vcode=xxxx
-# 更新 250524
+# 更新 250526
 '''
 cron:  5 0 * * *
 const $ = new Env("夸克签到");
@@ -73,9 +73,8 @@ class Quark:
         log = ""
         info = self.get_growth_info()
         username = self.param.get("user", "未知用户")
-        vip = "88VIP" if info and info.get("88VIP") else "普通用户"
 
-        log += f"{vip} {username}\n"
+        log += f"{username}\n"
 
         if not info:
             log += "签到失败：获取成长信息失败\n"
@@ -83,18 +82,21 @@ class Quark:
 
         total = self.convert_bytes(info["total_capacity"])
         signed = self.convert_bytes(info["cap_composition"].get("sign_reward", 0))
-        log += f"网盘总容量：{total}，签到累计容量：{signed}\n"
+        log += f"网盘总容量：{total}\n"
+        log += f"签到累计容量：{signed}\n"
 
         if info["cap_sign"]["sign_daily"]:
             today = self.convert_bytes(info["cap_sign"]["sign_daily_reward"])
-            log += f"签到状态：已签到+{today}，连签进度({info['cap_sign']['sign_progress']}/{info['cap_sign']['sign_target']})\n"
+            log += f"签到状态：已签到+{today}\n"
+            log += f"连签进度({info['cap_sign']['sign_progress']}/{info['cap_sign']['sign_target']})\n"
         else:
             ok, result = self.get_growth_sign()
             if ok:
                 today = self.convert_bytes(result)
                 progress = info['cap_sign']['sign_progress'] + 1
                 target = info['cap_sign']['sign_target']
-                log += f"签到状态：签到成功+{today}，连签进度({progress}/{target})\n"
+                log += f"签到状态：签到成功+{today}\n"
+                log += f"连签进度({progress}/{target})\n"
             else:
                 log += f"签到失败：{result}\n"
 
@@ -111,7 +113,7 @@ def main():
                 k, v = kv.split('=', 1)
                 user_data[k.strip()] = v.strip()
 
-        all_log += f"第{idx + 1}个账号 "
+        all_log += f"第{idx + 1}个账号："
         all_log += Quark(user_data).do_sign()
         all_log += "\n"
 
