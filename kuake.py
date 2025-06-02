@@ -72,7 +72,7 @@ class Quark:
     def do_sign(self):
         log = ""
         info = self.get_growth_info()
-        username = self.param.get("user", "未知用户")
+        username = self.param.get("user", "")
 
         log += f"{username}\n"
 
