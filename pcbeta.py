@@ -90,6 +90,7 @@ def login():
             pcbbsHeaders["Cookie"] = cookies
             print("✅ 登录成功，Cookie 已更新")
             writeLog("登录成功，Cookie: " + cookies)
+            save_cookie()
             return True
         else:
             print("❌ 登录失败，请检查用户名和密码")
@@ -150,28 +151,51 @@ def getTaskUrl():
         return None, None
 
 def pcbetaCheckin():
-    if "每日打卡" in newTaskRes:
-        taskRes = request.get(url=pcUrl, headers=pcHeaders).text
-        if "抱歉，本期您已申请过此任务，请下期再来" in taskRes:
-            return "已签到，请勿重复签到"
-        elif "恭喜您，任务已成功完成" in taskRes:
+    task_id = "149"  # 固定签到任务 ID
+    sign_url = f"https://i.pcbeta.com/home.php?mod=task&do=draw&id={task_id}"
+    apply_url = f"https://i.pcbeta.com/home.php?mod=task&do=apply&id={task_id}"
+    try:
+        # 先尝试申请任务
+        apply_res = request.get(url=apply_url, headers=pcHeaders).text
+        if "恭喜您，任务已成功完成" in apply_res:
+            print("✅ 申请时已完成签到")
             return "签到成功"
-        else:
+        elif "抱歉，本期您已申请过此任务，请下期再来" in apply_res:
+            # 如果已申请，尝试直接领取奖励
             time.sleep(1)
-            lqRes = request.get(url=lqurl+id, headers=pcHeaders).text
-            if "任务已成功完成" in lqRes:
+            lq_res = request.get(url=sign_url, headers=pcHeaders).text
+            if "任务已成功完成" in lq_res:
+                print("✅ 直接领取签到奖励成功")
                 return "签到成功，PB币+1"
-            elif "不是进行中的任务" in lqRes:
-                doneCheck = request.get(doneUrl, headers=pcHeaders).text
-                if "每日打卡" in doneCheck:
+            elif "不是进行中的任务" in lq_res:
+                done_check = request.get(doneUrl, headers=pcHeaders).text
+                if "每日打卡" in done_check:
+                    print("✅ 签到已完成")
                     return "签到已完成"
-            writeLog(lqRes)
-            return "签到失败"
-    elif "每日打卡" in doneTaskRes:
-        return "今日已签到"
-    else:
-        writeLog(newTaskRes + "\n" + doneTaskRes)
-        return "签到失败，未找到任务"
+                writeLog(lq_res)
+                return "签到失败：任务状态异常"
+            writeLog(lq_res)
+            return "签到失败：领取奖励失败"
+        else:
+            # 尝试直接签到
+            time.sleep(1)
+            lq_res = request.get(url=sign_url, headers=pcHeaders).text
+            if "任务已成功完成" in lq_res:
+                print("✅ 直接签到成功")
+                return "签到成功，PB币+1"
+            elif "不是进行中的任务" in lq_res:
+                done_check = request.get(doneUrl, headers=pcHeaders).text
+                if "每日打卡" in done_check:
+                    print("✅ 签到已完成")
+                    return "签到已完成"
+                writeLog(lq_res)
+                return "签到失败：任务不可用"
+            writeLog(lq_res)
+            return "签到失败：未知错误"
+    except Exception as e:
+        print(f"❌ 签到异常：{str(e)}")
+        writeLog(str(e))
+        return f"签到失败：{str(e)}"
 
 def pcbetaReply():
     taskName = "回帖打卡福利"
@@ -222,7 +246,6 @@ if __name__ == "__main__":
         print("尝试重新登录...")
         if not login():
             exit(1)
-        save_cookie()
 
     # 获取任务信息
     try:
