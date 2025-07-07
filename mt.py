@@ -1,12 +1,12 @@
 #原作者 https://raw.githubusercontent.com/linbailo/zyqinglong/refs/heads/main/mt.py
-#修改于2025 05 20  mtluntan=username1&password1@username2&password2@username3&password3
+
 
 """
 cron:  5 0 * * *
 const $ = new Env("MT论坛");
 """
 
-#修改于2025 07 05  mtluntan=username1&password1@username2&password2@username3&password3
+#修改于2025 07 05  MT_BBS=username1&password1@username2&password2@username3&password3
 
 import requests
 import re
@@ -134,18 +134,19 @@ def run_for_account(username, password):
         login_and_sign(username, password, session)
 
 if __name__ == '__main__':
-    if 'mtluntan' in os.environ:
-        fen = os.environ.get("mtluntan").split("@")
+    if 'MT_BBS' in os.environ:
+        fen = os.environ.get("MT_BBS").split("@")
         for i, duo in enumerate(fen):
             username, password = duo.split("&")
             if i != 0:
                 time.sleep(random.uniform(5, 10))
             run_for_account(username, password)
     else:
-        myprint("环境变量 mtluntan 未设置，格式应为 username1&password1@username2&password2...")
+        myprint("环境变量 MT_BBS 未设置，格式应为 username1&password1@username2&password2...")
         exit(0)
 
     try:
-        send_notification_message(title='mt论坛')
+        send_notification_message(title='MT论坛')
     except Exception:
         pass
+
