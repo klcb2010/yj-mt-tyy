@@ -78,7 +78,7 @@ def login_and_sign(username, password, session):
         'answer': '',
     }
 
-    time.sleep(random.uniform(5, 10))
+    time.sleep(random.uniform(10, 30))
 
     denlu = session.post(headers=headers, url=denurl, data=data).text
     if '欢迎您回来' in denlu:
