@@ -131,12 +131,17 @@ def main():
         "Accept-Encoding": "gzip, deflate",
     }
 
-    response = s.get(surl, headers=headers)
-    netdiskBonus = response.json()['netdiskBonus']
-    if response.json()['isSign'] == "false":
-        logger.info(f"未签到，签到获得{netdiskBonus}M空间")
-    else:
-        logger.info(f"已经签到过了，签到获得{netdiskBonus}M空间")
+    try:
+        response = s.get(surl, headers=headers)
+        data = response.json()
+        netdiskBonus = data.get('netdiskBonus', 0)
+        isSign = data.get('isSign', 'true')
+        if isSign == "false" and netdiskBonus > 0:
+            logger.info(f"成功签到，获得{netdiskBonus}M空间")
+        else:
+            logger.info(f"已经签到过了，签到获得{netdiskBonus}M空间")
+    except Exception as e:
+        logger.error(f"签到失败: {str(e)}")
 
 if __name__ == "__main__":
     main()
