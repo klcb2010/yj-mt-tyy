@@ -1,5 +1,7 @@
+"""
 cron:  45 7 * * *
 const $ = new Env("天翼云");
+"""
 
 import os
 import re
