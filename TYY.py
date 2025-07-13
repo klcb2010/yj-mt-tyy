@@ -3,6 +3,7 @@ cron:  45 7 * * *
 const $ = new Env("天翼云");
 """
 
+
 import os
 import re
 import json
@@ -11,6 +12,7 @@ import hashlib
 import urllib.parse
 import rsa
 import requests
+import time
 import logging
 
 # 加载环境变量
@@ -139,7 +141,7 @@ def main():
         netdiskBonus = data.get('netdiskBonus', 0)
         isSign = data.get('isSign', 'true')
         if isSign == "false" and netdiskBonus > 0:
-            logger.info(f"签到成功，获得{netdiskBonus}M空间")
+            logger.info(f"成功签到，获得{netdiskBonus}M空间")
         else:
             logger.info(f"已经签到过了，签到获得{netdiskBonus}M空间")
     except Exception as e:
