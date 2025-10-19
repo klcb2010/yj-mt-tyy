@@ -6,13 +6,14 @@ cron:  5 0 * * *
 const $ = new Env("MT论坛");
 """
 
-#修改于2025 07 05  MT_BBS=username1&password1@username2&password2@username3&password3
+#修改于2025 10 18  MT_BBS=username1&password1@username2&password2@username3&password3
 
 import requests
 import re
 import os
 import time
 import random
+import datetime
 
 ua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36'
 all_print_list = []
@@ -93,6 +94,7 @@ def login_and_sign(username, password, session):
         qd = session.get(url=qdurl, headers=headers).text
         qdyz = re.findall(r'<!\[CDATA\[(.*?)\]\]>', qd)
         myprint(f'签到状态：{qdyz[0] if qdyz else "未知"}')
+        myprint(f'签到时间：{datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
 
         if '已签' in qd or '成功' in qd:
             huoqu(session, formhash)
@@ -124,7 +126,7 @@ def run_for_account(username, password):
             qd = session.get(url=qdurl, headers=headers).text
             qdyz = re.findall(r'<!\[CDATA\[(.*?)\]\]>', qd)
             myprint(f'签到状态：{qdyz[0] if qdyz else "未知"}')
-
+            myprint(f'签到时间：{datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
             if '已签' in qd or '成功' in qd:
                 huoqu(session, formhash)
         except Exception as e:
@@ -139,7 +141,7 @@ if __name__ == '__main__':
         for i, duo in enumerate(fen):
             username, password = duo.split("&")
             if i != 0:
-                time.sleep(random.uniform(5, 10))
+                time.sleep(random.uniform(180, 300))
             run_for_account(username, password)
     else:
         myprint("环境变量 MT_BBS 未设置，格式应为 username1&password1@username2&password2...")
@@ -149,4 +151,3 @@ if __name__ == '__main__':
         send_notification_message(title='MT论坛')
     except Exception:
         pass
-
