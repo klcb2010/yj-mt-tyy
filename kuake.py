@@ -1,5 +1,5 @@
 # 原作者 海东青 
-#抓包 capacity/growth/info 
+#抓包 capacity/growth/info   个人信息获取失败 重新抓包
 #变量值 kps=xxxx；sign=xxxx；vcode=xxxx
 # 更新 250526
 '''
