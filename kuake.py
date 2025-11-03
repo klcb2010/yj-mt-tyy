@@ -1,7 +1,9 @@
 # 原作者 海东青 
 #抓包 capacity/growth/info   个人信息获取失败 重新抓包
 #变量值 kps=xxxx；sign=xxxx；vcode=xxxx
-# 更新 250526
+
+# 更新时间：2025-11-03
+
 '''
 cron:  5 0 * * *
 const $ = new Env("夸克签到");
@@ -9,9 +11,12 @@ const $ = new Env("夸克签到");
 
 import os
 import sys
+import time
+import random
 import requests
+from datetime import datetime
 
-# Server酱推送（可选，未配置可忽略）
+# Server酱推送（可选）
 def send_to_server(title, desp):
     server_key = os.environ.get("PUSH_KEY", "")
     if not server_key:
@@ -71,11 +76,18 @@ class Quark:
 
     def do_sign(self):
         log = ""
-        info = self.get_growth_info()
         username = self.param.get("user", "")
 
-        log += f"{username}\n"
+        # 随机延迟（模拟人工）
+        delay = random.randint(5, 60)
+        time.sleep(delay)
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
+        log += f"{username}\n"
+        log += f"本次签到随机延迟：{delay} 秒\n"
+        log += f"签到执行时间：{now}\n"
+
+        info = self.get_growth_info()
         if not info:
             log += "签到失败：获取成长信息失败\n"
             return log
@@ -87,7 +99,7 @@ class Quark:
 
         if info["cap_sign"]["sign_daily"]:
             today = self.convert_bytes(info["cap_sign"]["sign_daily_reward"])
-            log += f"签到状态：已签到+{today}\n"
+            log += f"签到状态：已签到 +{today}\n"
             log += f"连签进度({info['cap_sign']['sign_progress']}/{info['cap_sign']['sign_target']})\n"
         else:
             ok, result = self.get_growth_sign()
@@ -95,11 +107,10 @@ class Quark:
                 today = self.convert_bytes(result)
                 progress = info['cap_sign']['sign_progress'] + 1
                 target = info['cap_sign']['sign_target']
-                log += f"签到状态：签到成功+{today}\n"
+                log += f"签到状态：签到成功 +{today}\n"
                 log += f"连签进度({progress}/{target})\n"
             else:
                 log += f"签到失败：{result}\n"
-
         return log
 
 def main():
@@ -113,7 +124,7 @@ def main():
                 k, v = kv.split('=', 1)
                 user_data[k.strip()] = v.strip()
 
-        all_log += f"第{idx + 1}个账号："
+        all_log += f"====== 第{idx + 1}个账号 ======\n"
         all_log += Quark(user_data).do_sign()
         all_log += "\n"
 
