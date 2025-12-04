@@ -1,87 +1,68 @@
 import requests
-import json
-import time
+import datetime
+import uuid
 
-# ----------------------------
-# 你抓包的参数（必须定期更新）
-# ----------------------------
-PARAM = "BaeZRg4u4ICX4KsxUYpkGZT8zZZ%2B01F2YTsKY9wNV%2FSzgmu7WCYrSLeFAX2h8F%2BXEw%2B0y%2FF1mkm8axZPtQw3XWt698bT9weiCfSuPycVDoY%3D"
-PKID = "95a4d2770e364a78aedc93986b321bc5"
-SESSION_KEY = "7169e786-1066-4e72-9edc-9bbcb18bc7c2"
-SIGNATURE = "aeb17c5ecd0fa27f9f58e96a82c0ab68e3acce54"
-DATE = "Thu, 4 Dec 2025 14:19:52 GMT"
-EPKEY = "KRbdS2LSc1NQKsgFnmXWq4aWEWkpBz2VHiGgCZ6xtS2NfeoaoGzYBkFQnmEaDa8hMmwmXQdL6FYKzsawIjAMs/VZOfUu15ofwncashNCrvKgjt3YrdZfiBtr1njZbY5u9oR7XsthutQ0czzCh1HXe/N7skFSxvdd4oNcpV+xkS8="
-X_REQUEST_ID = "901a5aeb-83c5-4177-b7fe-2e6638cee6d3"
+# -------------------------
+# 固定参数（你抓包给的）
+# -------------------------
+PARAM = "7G+qE/ZTFSWww5zQNjpUO77wbxWN3aIjj8+d1HuropPGj1pcQUOw5ee71Ei2pqiiqK9vXpSmfoMNf+wY4UcTY+2tDM54MOUOd7bOOk+pARs="
+PKID = "dd2343aea57f49ad95c62b849c5bc312"
 
+SESSION_KEY = "913aebbf-1b46-49cc-9e73-2b90cd36bf50"
+SIGNATURE = "8a70a9dd40b5c3a2bad6449727994ebf45e04d05"
 
-# ==========================================
-#  访问 getUserInfo.action 以验证参数是否有效
-# ==========================================
-def get_user_info():
+EPVER = "2"
+EPKEY = "nTiCHhmIsf1YSkA26Mri28TNJQUzPnRG+71Lyf8FDVn3LysIvzCwiQ0qR7sPVy0zfhMjhl7oJZw68Fcqniv5o0M/QKKk6/GZzkqoIwXy+1h6VfJmPVcHJKNj1gRQuSbjk+iGznWs/nfYg+Bs24D28obeoqfVAg0ZDIdh38Bgd68="
+EPWAY = "3"
+
+UA = "Ecloud/ 8.9.0 (PLK110; ; uc) Android/36"
+
+# -------------------------
+# 通用请求头
+# -------------------------
+def build_headers():
+    now = datetime.datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S GMT")
+    return {
+        "Host": "api.cloud.189.cn",
+        "User-Agent": UA,
+        "sessionKey": SESSION_KEY,
+        "signature": SIGNATURE,
+        "date": now,
+        "epver": EPVER,
+        "epkey": EPKEY,
+        "epway": EPWAY,
+        "x-request-id": str(uuid.uuid4()),
+        "Accept-Encoding": "gzip",
+        "Content-Type": "text/xml; charset=utf-8",
+        "cache-control": "no-cache",
+    }
+
+# -------------------------
+# 1）校验参数（可选，但建议）
+# -------------------------
+def check_session():
     url = "https://api.cloud.189.cn/getUserInfo.action"
-
     params = {
         "param": PARAM,
-        "pkId": PKID
+        "pkId": PKID,
     }
+    r = requests.get(url, headers=build_headers(), params=params)
+    return r.text
 
-    headers = {
-        "user-agent": "Ecloud/ 8.9.0 (PLK110; ; uc) Android/36",
-        "cache-control": "no-cache",
-        "x-request-id": X_REQUEST_ID,
-        "sessionkey": SESSION_KEY,
-        "signature": SIGNATURE,
-        "date": DATE,
-        "epver": "2",
-        "epkey": EPKEY,
-        "epway": "3",
-        "accept-encoding": "gzip",
-        "content-type": "text/xml; charset=utf-8"
-    }
-
-    resp = requests.get(url, headers=headers, params=params)
-    return resp.text
-
-
-# ==========================================
-#             天翼云签到接口
-#  APP 端使用的是：/sign/commit
-# ==========================================
-def sign_in():
+# -------------------------
+# 2）签到
+# -------------------------
+def sign():
     url = "https://api.cloud.189.cn/mkt/userSign.action"
+    r = requests.get(url, headers=build_headers())
+    return r.text
 
-    headers = {
-        "user-agent": "Ecloud/ 8.9.0 (PLK110; ; uc) Android/36",
-        "cache-control": "no-cache",
-        "x-request-id": X_REQUEST_ID,
-        "sessionkey": SESSION_KEY,
-        "signature": SIGNATURE,
-        "date": DATE,
-        "epver": "2",
-        "epkey": EPKEY,
-        "epway": "3",
-        "accept-encoding": "gzip",
-        "content-type": "application/x-www-form-urlencoded"
-    }
-
-    resp = requests.post(url, headers=headers)
-    return resp.text
-
-
-# ==========================================
-#                    主程序
-# ==========================================
-def main():
+# -------------------------
+# 主流程
+# -------------------------
+if __name__ == "__main__":
     print("【1】校验参数 → getUserInfo.action")
-    info = get_user_info()
-    print(info)
-
-    time.sleep(1)
+    print(check_session())
 
     print("\n【2】开始签到 → userSign.action")
-    result = sign_in()
-    print(result)
-
-
-if __name__ == "__main__":
-    main()
+    print(sign())
