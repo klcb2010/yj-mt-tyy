@@ -1,9 +1,10 @@
 import requests
 import datetime
 import uuid
+import json
 
 # -------------------------
-# 固定参数（你抓包给的）
+# 固定参数（抓包提供）
 # -------------------------
 PARAM = "7G+qE/ZTFSWww5zQNjpUO77wbxWN3aIjj8+d1HuropPGj1pcQUOw5ee71Ei2pqiiqK9vXpSmfoMNf+wY4UcTY+2tDM54MOUOd7bOOk+pARs="
 PKID = "dd2343aea57f49ad95c62b849c5bc312"
@@ -38,7 +39,7 @@ def build_headers():
     }
 
 # -------------------------
-# 1）校验参数（可选，但建议）
+# 1）校验参数（可选）
 # -------------------------
 def check_session():
     url = "https://api.cloud.189.cn/getUserInfo.action"
@@ -55,14 +56,24 @@ def check_session():
 def sign():
     url = "https://api.cloud.189.cn/mkt/userSign.action"
     r = requests.get(url, headers=build_headers())
-    return r.text
+    try:
+        data = r.json()
+        if data.get("errorCode") == 0:
+            bonus = data.get("netdiskBonus", 0)
+            return f"签到成功，获得 {bonus}M 空间"
+        else:
+            return f"签到失败: {data.get('errorMsg')}"
+    except Exception:
+        return f"签到失败，返回内容: {r.text}"
 
 # -------------------------
 # 主流程
 # -------------------------
 if __name__ == "__main__":
     print("【1】校验参数 → getUserInfo.action")
-    print(check_session())
+    resp1 = check_session()
+    print(resp1)
 
     print("\n【2】开始签到 → userSign.action")
-    print(sign())
+    resp2 = sign()
+    print(resp2)
