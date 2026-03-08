@@ -1,79 +1,46 @@
-import requests
-import datetime
-import uuid
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-   https://e.189.cn/user/account/serviceControl.do 关闭「设备锁」和「唯一ID」校验
+​
+import time
+import re
 import json
-
-# -------------------------
-# 固定参数（抓包提供）
-# -------------------------
-PARAM = "7G+qE/ZTFSWww5zQNjpUO77wbxWN3aIjj8+d1HuropPGj1pcQUOw5ee71Ei2pqiiqK9vXpSmfoMNf+wY4UcTY+2tDM54MOUOd7bOOk+pARs="
-PKID = "dd2343aea57f49ad95c62b849c5bc312"
-
-SESSION_KEY = "913aebbf-1b46-49cc-9e73-2b90cd36bf50"
-SIGNATURE = "8a70a9dd40b5c3a2bad6449727994ebf45e04d05"
-
-EPVER = "2"
-EPKEY = "nTiCHhmIsf1YSkA26Mri28TNJQUzPnRG+71Lyf8FDVn3LysIvzCwiQ0qR7sPVy0zfhMjhl7oJZw68Fcqniv5o0M/QKKk6/GZzkqoIwXy+1h6VfJmPVcHJKNj1gRQuSbjk+iGznWs/nfYg+Bs24D28obeoqfVAg0ZDIdh38Bgd68="
-EPWAY = "3"
-
-UA = "Ecloud/ 8.9.0 (PLK110; ; uc) Android/36"
-
-# -------------------------
-# 通用请求头
-# -------------------------
-def build_headers():
-    now = datetime.datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S GMT")
-    return {
-        "Host": "api.cloud.189.cn",
-        "User-Agent": UA,
-        "sessionKey": SESSION_KEY,
-        "signature": SIGNATURE,
-        "date": now,
-        "epver": EPVER,
-        "epkey": EPKEY,
-        "epway": EPWAY,
-        "x-request-id": str(uuid.uuid4()),
-        "Accept-Encoding": "gzip",
-        "Content-Type": "text/xml; charset=utf-8",
-        "cache-control": "no-cache",
-    }
-
-# -------------------------
-# 1）校验参数（可选）
-# -------------------------
-def check_session():
-    url = "https://api.cloud.189.cn/getUserInfo.action"
-    params = {
-        "param": PARAM,
-        "pkId": PKID,
-    }
-    r = requests.get(url, headers=build_headers(), params=params)
-    return r.text
-
-# -------------------------
-# 2）签到
-# -------------------------
-def sign():
-    url = "https://api.cloud.189.cn/mkt/userSign.action"
-    r = requests.get(url, headers=build_headers())
-    try:
-        data = r.json()
-        if data.get("errorCode") == 0:
-            bonus = data.get("netdiskBonus", 0)
-            return f"签到成功，获得 {bonus}M 空间"
-        else:
-            return f"签到失败: {data.get('errorMsg')}"
-    except Exception:
-        return f"签到失败，返回内容: {r.text}"
-
-# -------------------------
-# 主流程
-# -------------------------
-if __name__ == "__main__":
-    print("【1】校验参数 → getUserInfo.action")
-    resp1 = check_session()
-    print(resp1)
-
-    print("\n【2】开始签到 → userSign.action")
-    resp2 = sign()
-    print(resp2)
+import base64
+import urllib.parse
+import rsa
+import requests
+import random
+import os
+from datetime import datetime, timedelta
+​
+# 随机延迟配置（环境变量）
+MAX_RANDOM_DELAY = int(os.getenv("MAX_RANDOM_DELAY", "300"))  # 默认最多5分钟
+RANDOM_SIGNIN = os.getenv("RANDOM_SIGNIN", "true").lower() == "true"
+​
+def format_time_remaining(seconds):
+    if seconds <= 0:
+        return "立即执行"
+    hours = seconds // 3600
+    minutes = (seconds % 3600) // 60
+    secs = seconds % 60
+    if hours > 0:
+        return f"{hours}小时{minutes}分{secs}秒"
+    elif minutes > 0:
+        return f"{minutes}分{secs}秒"
+    else:
+        return f"{secs}秒"
+​
+def wait_with_countdown(delay_seconds, task_name="任务"):
+    if delay_seconds <= 0:
+        return
+    print(f"⏳ {task_name} 需等待 {format_time_remaining(delay_seconds)}")
+    remaining = delay_seconds
+    while remaining > 0:
+        if remaining <= 10 or remaining % 10 == 0:
+            print(f"倒计时: {format_time_remaining(remaining)}")
+        sleep_time = 1 if remaining <= 10 else min(10, remaining)
+        time.sleep(sleep_time)
+        remaining -= sleep_time
+​
+class TianYiYunPan:
+    def __init__(self, username, password, index):
+        self.username = username
