@@ -7,10 +7,13 @@
 # 修正说明中的变量名和删除通知 2025 05 06
 """
 打开小程序或APP-我的-积分, 捉以下几种url之一,把整个url放到变量 SFSY （对 修正的就是这里）里,多账号换行分割
-小程序抓包后筛选 activityRedirect?source=
+电脑抓包 开启https流量 小程序 进入积分界面 看到积分列表后 筛选activityRedirect?source= 右键复制URL
 """
-# cron:  1 10,15,18 * * *
-# const $ = new Env("顺丰速运");
+
+"""
+ cron:  1 10,15,18 * * *
+const $ = new Env("顺丰速运");
+"""
 import hashlib
 import json
 import os
