@@ -1,5 +1,10 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-   https://e.189.cn/user/account/serviceControl.do 关闭「设备锁」和「唯一ID」校验
+
+"""
+cron: 5 0 * * *
+const $ = new Env("天翼云");
+"""
 ​
 import time
 import re
