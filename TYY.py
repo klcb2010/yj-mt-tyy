@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-   https://e.189.cn/user/account/serviceControl.do 关闭「设备锁」和「唯一ID」校验
-
+# 多账号173xxxxxxxx&密码1;173yyyyyyyy&密码2;173zzzzzzzz&密码3
 """
 cron: 5 0 * * *
 const $ = new Env("天翼云");
