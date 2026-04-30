@@ -1,3 +1,11 @@
+
+chmod +x ql_self_heal.sh
+
+
+./ql_self_heal.sh
+
+
+
 远景论坛和MT论坛和天翼云签到
 
 
