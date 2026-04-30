@@ -1,8 +1,8 @@
 
-chmod +x ql_self_heal.sh
+chmod +x ql_super_heal.sh
 
 
-./ql_self_heal.sh
+./ql_super_heal.sh
 
 
 
